@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, div, h1, input, label, p, text)
 import Html.Attributes exposing (checked, style, type_)
 import Html.Events exposing (onClick)
+import List.Nonempty as Nonempty exposing (Nonempty(..))
 import Messages exposing (..)
 import Model exposing (..)
 import Random exposing (..)
@@ -21,11 +22,10 @@ initialGame : Game
 initialGame =
     { cols = 20
     , rows = 14
-    , moves = [ east ]
-    , snake = []
+    , moves = Nonempty.fromElement east
+    , snake = Nonempty.fromElement {x = 2, y = 2}
     , apple = { x = 16, y = 2 }
     }
-
 
 
 ---- UPDATE ----

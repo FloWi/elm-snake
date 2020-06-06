@@ -99,3 +99,11 @@ img {
   height: 85vh;
   width: 80vw;
 }
+
+.snake {
+  fill: green;
+}
+
+.apple {
+  fill: darkred;
+}
