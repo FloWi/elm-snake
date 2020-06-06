@@ -56,7 +56,6 @@ view model =
         ]
         [ div [ Html.Attributes.class "header" ]
             [ h1 [] [ text "Elm Snake" ]
-            , p [] [ text "inspired by Christopher Okhravi's excellent ", Html.a [ Html.Attributes.href "https://www.youtube.com/playlist?list=PLrhzvIcii6GOfRvsaVVdYSRjRhPWgAIKc" ] [ text "Game Development with Functional Programming in JavaScript series" ] ]
             ]
         , renderGame
             model
