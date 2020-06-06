@@ -1,0 +1,101 @@
+/*
+  elm-hot creates an additional div wrapper around the app to make HMR possible.
+  This could break styling in development mode if you are using Elm UI.
+
+  More context in the issue:
+    https://github.com/halfzebra/create-elm-app/issues/320
+*/
+[data-elm-hot="true"] {
+  height: inherit;
+}
+
+body {
+  font-family: "Source Sans Pro", "Trebuchet MS", "Lucida Grande",
+    "Bitstream Vera Sans", "Helvetica Neue", sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #121212;
+  /* text-align: center; */
+  color: #fff;
+  display: flex;
+  /* justify-content: center; */
+
+  /*text-align: center;*/
+  color: #293c4b;
+}
+
+h1 {
+  font-size: 30px;
+  padding-left: 10px;
+}
+
+img {
+  margin: 20px 0;
+  max-width: 200px;
+}
+
+.gameView {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: 1fr 6fr 3fr;
+  grid-template-rows: 1fr 12fr 1fr;
+  grid-template-areas:
+    "....... header  header"
+    "sidebar content content"
+    "footer  footer  footer";
+  background-color: #fff;
+  color: #444;
+  height: 100vh;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  background-color: #acacac;
+}
+
+.contentDebug {
+  display: grid;
+  grid-area: content;
+  grid-gap: 10px;
+  grid-template-columns: 5fr 1fr;
+  grid-template-areas: "gameScreen debugScreen";
+}
+
+.content {
+  display: grid;
+  grid-area: content;
+  grid-gap: 10px;
+  grid-template-areas: "gameScreen";
+}
+
+.header {
+  grid-area: header;
+  background-color: #5691b3;
+}
+
+.footer {
+  grid-area: footer;
+  background-color: #3f6b86;
+}
+
+.gameScreen {
+  grid-area: gameScreen;
+  background: #121212;
+}
+
+.gameScreen h1 {
+  color: #cbcbcb;
+}
+
+.debugScreen {
+  grid-area: debugScreen;
+  background-color: #e3e3e3;
+}
+
+.svgGame {
+  background-color: #121212;
+  border: 1px solid #cccccc;
+  height: 85vh;
+  width: 80vw;
+}

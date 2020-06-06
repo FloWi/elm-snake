@@ -1,0 +1,27 @@
+{
+  "name": "elm-snake",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "elm-app build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FloWi/elm-snake.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FloWi/elm-snake/issues"
+  },
+  "homepage": "https://github.com/FloWi/elm-snake#readme",
+  "devDependencies": {
+    "create-elm-app": "^4.2.23"
+  },
+  "dependencies": {}
+}
