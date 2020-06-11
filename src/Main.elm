@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Browser
+import Helper exposing (flattenMaybes)
 import Html exposing (Html, div, fieldset, h1, input, label, text)
 import Html.Attributes exposing (checked, style, type_)
 import Html.Events exposing (onClick)
@@ -26,9 +27,11 @@ initializeGame time zone =
     , moves = Nonempty.fromElement east
     , snake = Nonempty.fromElement { x = 2, y = 2 }
     , apple = { x = 16, y = 2 }
-    , currentTime = time
+    , startTime = time
     , currentZone = zone
     , isDebug = False
+    , currentTime = time
+    , applesEaten = 0
     }
 
 
@@ -75,13 +78,27 @@ checkbox msg name isChecked =
 view : Model -> Html Msg
 view model =
     let
-        isDebug =
+        ( level, isDebug ) =
             case model of
                 RunningGame game ->
-                    game.isDebug
+                    ( Just game.applesEaten, game.isDebug )
 
                 NotStarted ->
-                    False
+                    ( Nothing, False )
+
+        levelDiv =
+            level
+                |> Maybe.map (\l -> div [] [ text ("Level " ++ String.fromInt l) ])
+
+        sideBarElements =
+            [ Just (h1 [] [ text "Sidebar" ])
+            , Just
+                (fieldset []
+                    [ checkbox ToggleDebug "debugView" isDebug ]
+                )
+            , levelDiv
+            ]
+                |> flattenMaybes
     in
     div
         [ Html.Attributes.class "gameView"
@@ -92,10 +109,7 @@ view model =
         , renderGame
             model
         , div [ Html.Attributes.class "sidebar" ]
-            [ h1 [] [ text "Sidebar" ]
-            , fieldset []
-                [ checkbox ToggleDebug "debugView" isDebug ]
-            ]
+            sideBarElements
         , div [ Html.Attributes.class "footer" ]
             [ h1 [] [ text "Footer" ]
             ]
@@ -109,8 +123,10 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        RunningGame _ ->
-            Time.every 1000 Tick
+        RunningGame game ->
+            Time.every
+                (toFloat (tickInterval game))
+                Tick
 
         NotStarted ->
             Sub.none

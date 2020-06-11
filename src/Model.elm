@@ -12,6 +12,11 @@ type Model
     | NotStarted
 
 
+tickInterval : Game -> Int
+tickInterval game =
+    1000 - min (game.applesEaten * 5) 100
+
+
 nextHead : Game -> Vector
 nextHead game =
     let
@@ -32,9 +37,11 @@ type alias Game =
     , moves : Nonempty Vector
     , snake : Nonempty Vector
     , apple : Vector
+    , startTime : Time.Posix
     , currentTime : Time.Posix
     , currentZone : Time.Zone
     , isDebug : Bool
+    , applesEaten : Int
     }
 
 

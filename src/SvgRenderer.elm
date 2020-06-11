@@ -1,5 +1,6 @@
 module SvgRenderer exposing (..)
 
+import Helper exposing (flattenMaybes)
 import Html exposing (Html, div)
 import Html.Attributes
 import List.Nonempty as Nonempty exposing (Nonempty)
@@ -36,10 +37,34 @@ renderGame model =
                     else
                         "content"
 
+                elapsedTime =
+                    Time.posixToMillis game.currentTime - Time.posixToMillis game.startTime
+
+                elapsedTimeMsString =
+                    String.fromInt elapsedTime ++ "ms"
+
                 debugScreenDiv =
-                    div [ Html.Attributes.class "debugScreen" ]
-                        [ Html.text (toTimeString game.currentTime game.currentZone)
-                        ]
+                    if not game.isDebug then
+                        Nothing
+
+                    else
+                        Just
+                            (div [ Html.Attributes.class "debugScreen" ]
+                                [ Html.pre []
+                                    [ Html.text
+                                        ("  start time: "
+                                            ++ toTimeString game.startTime game.currentZone
+                                            ++ "\ncurrent time: "
+                                            ++ toTimeString game.currentTime game.currentZone
+                                            ++ "\nelapsed time: "
+                                            ++ elapsedTimeMsString
+                                            ++ "\ntick interval: "
+                                            ++ String.fromInt (tickInterval game)
+                                            ++ "ms"
+                                        )
+                                    ]
+                                ]
+                            )
 
                 snake =
                     drawListBlocks game.snake "snake" game
@@ -60,13 +85,10 @@ renderGame model =
                         ]
 
                 divs =
-                    gameScreenDiv
-                        :: (if game.isDebug then
-                                [ debugScreenDiv ]
-
-                            else
-                                []
-                           )
+                    flattenMaybes
+                        [ Just gameScreenDiv
+                        , debugScreenDiv
+                        ]
             in
             div
                 [ Html.Attributes.class contentClass ]
