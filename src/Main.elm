@@ -24,7 +24,7 @@ initializeGame : Time.Posix -> Time.Zone -> Game
 initializeGame time zone =
     { cols = 20
     , rows = 14
-    , moves = Nonempty.fromElement east
+    , moves = Nonempty.fromElement south
     , snake = Nonempty.fromElement { x = 2, y = 2 }
     , apple = { x = 16, y = 2 }
     , startTime = time
@@ -42,11 +42,7 @@ addVector v1 v2 =
 
 applyMove : Game -> Nonempty Vector
 applyMove game =
-    let
-        move =
-            calcMove game
-    in
-    calcNewSnake move game.snake
+    calcNewSnake game
 
 
 calcMove : Game -> Vector
@@ -54,17 +50,26 @@ calcMove game =
     Nonempty.head game.moves
 
 
-calcNewSnake : Vector -> Nonempty Vector -> Nonempty Vector
-calcNewSnake direction snake =
+adjustPositionToGameSize : Game -> Vector -> Vector
+adjustPositionToGameSize game { x, y } =
+    { x = modBy game.cols x, y = modBy game.rows y }
+
+
+calcNewSnake : Game -> Nonempty Vector
+calcNewSnake game =
     let
+        direction =
+            calcMove game
+
         newHead =
-            addVector (Nonempty.head snake) direction
+            addVector (Nonempty.head game.snake) direction
     in
-    snake
+    game.snake
         |> Nonempty.reverse
         |> Nonempty.tail
         |> List.reverse
         |> Nonempty newHead
+        |> Nonempty.map (\pos -> adjustPositionToGameSize game pos)
 
 
 
