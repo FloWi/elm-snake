@@ -1,7 +1,8 @@
 module Messages exposing (..)
 
-import Model exposing (..)
+import Time
 
 
 type Msg
-    = InitializedGame Game
+    = Tick Time.Posix
+    | GotTimeInfos ( Time.Zone, Time.Posix )

@@ -1,31 +1,36 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, div, h1, input, label, p, text)
+import Html exposing (Html, div, h1, input, label, text)
 import Html.Attributes exposing (checked, style, type_)
 import Html.Events exposing (onClick)
 import List.Nonempty as Nonempty exposing (Nonempty(..))
 import Messages exposing (..)
 import Model exposing (..)
-import Random exposing (..)
 import SvgRenderer exposing (..)
+import Task
+import Time exposing (Posix, Zone)
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model.RunningGame initialGame
-    , Cmd.none
+    ( Model.NotStarted
+    , Task.perform GotTimeInfos (Task.map2 Tuple.pair Time.here Time.now)
     )
 
 
-initialGame : Game
-initialGame =
+initializeGame : Time.Posix -> Time.Zone -> Game
+initializeGame time zone =
     { cols = 20
     , rows = 14
     , moves = Nonempty.fromElement east
-    , snake = Nonempty.fromElement {x = 2, y = 2}
+    , snake = Nonempty.fromElement { x = 2, y = 2 }
     , apple = { x = 16, y = 2 }
+    , currentTime = time
+    , currentZone = zone
+    , isDebug = True
     }
+
 
 
 ---- UPDATE ----
@@ -33,7 +38,22 @@ initialGame =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case model of
+        RunningGame game ->
+            case msg of
+                Tick posix ->
+                    ( RunningGame { game | currentTime = posix }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        NotStarted ->
+            case msg of
+                GotTimeInfos ( currentTime, currentZone ) ->
+                    ( RunningGame (initializeGame currentZone currentTime), Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 
@@ -69,6 +89,20 @@ view model =
 
 
 
+---- SUBSCRIPTIONS ----
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    case model of
+        RunningGame _ ->
+            Time.every 1000 Tick
+
+        NotStarted ->
+            Sub.none
+
+
+
 ---- PROGRAM ----
 
 
@@ -78,5 +112,5 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }

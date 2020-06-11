@@ -49,17 +49,17 @@ img {
   height: 100vh;
 }
 
-.sidebar {
-  grid-area: sidebar;
-  background-color: #acacac;
-}
-
 .contentDebug {
   display: grid;
   grid-area: content;
   grid-gap: 10px;
   grid-template-columns: 5fr 1fr;
   grid-template-areas: "gameScreen debugScreen";
+}
+
+.sidebar {
+  grid-area: sidebar;
+  background-color: #acacac;
 }
 
 .content {

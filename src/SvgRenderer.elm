@@ -7,6 +7,21 @@ import Messages exposing (..)
 import Model exposing (..)
 import Svg exposing (Svg, svg)
 import Svg.Attributes exposing (..)
+import Time exposing (toHour, toMinute, toSecond)
+
+
+toTimeString : Time.Posix -> Time.Zone -> String
+toTimeString time zone =
+    let
+        twoDigitNumber int =
+            String.fromInt int
+                |> String.padLeft 2 '0'
+    in
+    twoDigitNumber (toHour zone time)
+        ++ ":"
+        ++ twoDigitNumber (toMinute zone time)
+        ++ ":"
+        ++ twoDigitNumber (toSecond zone time)
 
 
 renderGame : Model -> Svg msg
@@ -14,8 +29,17 @@ renderGame model =
     case model of
         RunningGame game ->
             let
+                contentClass =
+                    if game.isDebug then
+                        "contentDebug"
+
+                    else
+                        "content"
+
                 debugScreenDiv =
-                    div [] []
+                    div [ Html.Attributes.class "debugScreen" ]
+                        [ Html.text (toTimeString game.currentTime game.currentZone)
+                        ]
 
                 snake =
                     drawListBlocks game.snake "snake" game
@@ -24,7 +48,7 @@ renderGame model =
                     drawListBlocks (Nonempty.fromElement game.apple) "apple" game
             in
             div
-                []
+                [ Html.Attributes.class contentClass ]
                 [ div [ Html.Attributes.class "gameScreen" ]
                     [ svg
                         [ class "svgGame"
@@ -36,6 +60,11 @@ renderGame model =
                         ]
                     ]
                 , debugScreenDiv
+                ]
+
+        NotStarted ->
+            div []
+                [ Html.h1 [] [ Html.text "Game hasn't been started yet" ]
                 ]
 
 
