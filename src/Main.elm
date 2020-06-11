@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Helper exposing (flattenMaybes)
+import Helper exposing (flattenOpt)
 import Html exposing (Html, div, fieldset, h1, input, label, text)
 import Html.Attributes exposing (checked, style, type_)
 import Html.Events exposing (onClick)
@@ -35,6 +35,38 @@ initializeGame time zone =
     }
 
 
+addVector : Vector -> Vector -> Vector
+addVector v1 v2 =
+    { x = v1.x + v2.x, y = v1.y + v2.y }
+
+
+applyMove : Game -> Nonempty Vector
+applyMove game =
+    let
+        move =
+            calcMove game
+    in
+    calcNewSnake move game.snake
+
+
+calcMove : Game -> Vector
+calcMove game =
+    Nonempty.head game.moves
+
+
+calcNewSnake : Vector -> Nonempty Vector -> Nonempty Vector
+calcNewSnake direction snake =
+    let
+        newHead =
+            addVector (Nonempty.head snake) direction
+    in
+    snake
+        |> Nonempty.reverse
+        |> Nonempty.tail
+        |> List.reverse
+        |> Nonempty newHead
+
+
 
 ---- UPDATE ----
 
@@ -45,7 +77,7 @@ update msg model =
         RunningGame game ->
             case msg of
                 Tick posix ->
-                    ( RunningGame { game | currentTime = posix }, Cmd.none )
+                    ( RunningGame { game | currentTime = posix, snake = applyMove game }, Cmd.none )
 
                 ToggleDebug ->
                     ( RunningGame { game | isDebug = not game.isDebug }, Cmd.none )
@@ -91,14 +123,14 @@ view model =
                 |> Maybe.map (\l -> div [] [ text ("Level " ++ String.fromInt l) ])
 
         sideBarElements =
-            [ Just (h1 [] [ text "Sidebar" ])
-            , Just
-                (fieldset []
-                    [ checkbox ToggleDebug "debugView" isDebug ]
-                )
-            , levelDiv
-            ]
-                |> flattenMaybes
+            flattenOpt
+                [ Just (h1 [] [ text "Sidebar" ])
+                , Just
+                    (fieldset []
+                        [ checkbox ToggleDebug "debugView" isDebug ]
+                    )
+                , levelDiv
+                ]
     in
     div
         [ Html.Attributes.class "gameView"

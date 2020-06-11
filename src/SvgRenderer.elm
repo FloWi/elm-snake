@@ -1,6 +1,6 @@
 module SvgRenderer exposing (..)
 
-import Helper exposing (flattenMaybes)
+import Helper exposing (flattenOpt)
 import Html exposing (Html, div)
 import Html.Attributes
 import List.Nonempty as Nonempty exposing (Nonempty)
@@ -85,7 +85,7 @@ renderGame model =
                         ]
 
                 divs =
-                    flattenMaybes
+                    flattenOpt
                         [ Just gameScreenDiv
                         , debugScreenDiv
                         ]

@@ -1,8 +1,8 @@
-module Helper exposing (flattenMaybes)
+module Helper exposing (flattenOpt)
 
 
-flattenMaybes : List (Maybe a) -> List a
-flattenMaybes maybes =
+flattenOpt : List (Maybe a) -> List a
+flattenOpt maybes =
     let
         map a =
             case a of
