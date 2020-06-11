@@ -1,7 +1,6 @@
 module Model exposing (..)
 
 ---- MODEL ----
---| MoveCardStack { startCardIndex : CardIndex, cardStack : CardStack, destinationSlotIndex : Int }
 
 import List.Extra
 import List.Nonempty as Nonempty exposing (Nonempty)

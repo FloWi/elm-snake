@@ -53,13 +53,24 @@ calcNewSnake game direction =
     let
         newHead =
             addVector (Nonempty.head game.snake) direction
+
+        willEat =
+            newHead == game.apple
+
+        newSnake =
+            case willEat of
+                True ->
+                    Nonempty.append (Nonempty.fromElement newHead) game.snake
+
+                False ->
+                    game.snake
+                        |> Nonempty.reverse
+                        |> Nonempty.tail
+                        |> List.reverse
+                        |> Nonempty newHead
     in
     -- Mental image: take the last element of the list and move it one tile ahead of the snakes current head in the current direction"
-    game.snake
-        |> Nonempty.reverse
-        |> Nonempty.tail
-        |> List.reverse
-        |> Nonempty newHead
+    newSnake
         |> Nonempty.map (\pos -> adjustPositionToGameSize game pos)
 
 
