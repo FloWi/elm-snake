@@ -26,12 +26,13 @@ initializeGame : Time.Posix -> Time.Zone -> Game
 initializeGame time zone =
     { cols = 20
     , rows = 14
-    , moves = Nonempty.fromElement south
+    , moves = []
+    , currentDirection = east
     , snake = Nonempty.fromElement { x = 2, y = 2 }
     , apple = { x = 16, y = 2 }
     , startTime = time
     , currentZone = zone
-    , isDebug = False
+    , isDebug = True
     , currentTime = time
     , applesEaten = 0
     }
@@ -42,36 +43,36 @@ addVector v1 v2 =
     { x = v1.x + v2.x, y = v1.y + v2.y }
 
 
-applyMove : Game -> Nonempty Vector
-applyMove game =
-    calcNewSnake game
-
-
-calcMove : Game -> Vector
-calcMove game =
-    Nonempty.head game.moves
-
-
 adjustPositionToGameSize : Game -> Vector -> Vector
 adjustPositionToGameSize game { x, y } =
     { x = modBy game.cols x, y = modBy game.rows y }
 
 
-calcNewSnake : Game -> Nonempty Vector
-calcNewSnake game =
+calcNewSnake : Game -> Vector -> Nonempty Vector
+calcNewSnake game direction =
     let
-        direction =
-            calcMove game
-
         newHead =
             addVector (Nonempty.head game.snake) direction
     in
+    -- Mental image: take the last element of the list and move it one tile ahead of the snakes current head in the current direction"
     game.snake
         |> Nonempty.reverse
         |> Nonempty.tail
         |> List.reverse
         |> Nonempty newHead
         |> Nonempty.map (\pos -> adjustPositionToGameSize game pos)
+
+
+evaluateGameTick : Game -> Time.Posix -> Game
+evaluateGameTick game posix =
+    let
+        move =
+            evaluateMove game.moves game.currentDirection
+
+        snake =
+            calcNewSnake game move
+    in
+    { game | currentTime = posix, snake = snake, moves = [], currentDirection = move }
 
 
 
@@ -84,13 +85,13 @@ update msg model =
         RunningGame game ->
             case msg of
                 Tick posix ->
-                    ( RunningGame { game | currentTime = posix, snake = applyMove game }, Cmd.none )
+                    ( RunningGame (evaluateGameTick game posix), Cmd.none )
 
                 ToggleDebug ->
                     ( RunningGame { game | isDebug = not game.isDebug }, Cmd.none )
 
                 DirectionChange newDirection ->
-                    ( RunningGame { game | moves = Nonempty.cons newDirection game.moves }, Cmd.none )
+                    ( RunningGame { game | moves = List.append game.moves [ newDirection ] }, Cmd.none )
 
                 NoOp ->
                     ( RunningGame game, Cmd.none )
@@ -192,13 +193,25 @@ toDirection string =
         "ArrowLeft" ->
             DirectionChange west
 
+        "a" ->
+            DirectionChange west
+
         "ArrowRight" ->
+            DirectionChange east
+
+        "d" ->
             DirectionChange east
 
         "ArrowUp" ->
             DirectionChange north
 
+        "w" ->
+            DirectionChange north
+
         "ArrowDown" ->
+            DirectionChange south
+
+        "s" ->
             DirectionChange south
 
         _ ->

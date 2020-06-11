@@ -100,6 +100,11 @@ img {
   width: 80vw;
 }
 
+.svgGameBackground {
+  fill: #0c2415;
+  border: 1px solid #cccccc;
+}
+
 .snake {
   fill: green;
 }

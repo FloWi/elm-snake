@@ -3,6 +3,7 @@ module Model exposing (..)
 ---- MODEL ----
 --| MoveCardStack { startCardIndex : CardIndex, cardStack : CardStack, destinationSlotIndex : Int }
 
+import List.Extra
 import List.Nonempty as Nonempty exposing (Nonempty)
 import Time
 
@@ -17,24 +18,37 @@ tickInterval game =
     1000 - min (game.applesEaten * 5) 100
 
 
-nextHead : Game -> Vector
-nextHead game =
-    let
-        snakeHead =
-            Nonempty.head game.snake
+evaluateMove : List Vector -> Vector -> Vector
+evaluateMove moves currentDirection =
+    case moves of
+        [] ->
+            currentDirection
 
-        movesHead =
-            Nonempty.head game.moves
+        xs ->
+            xs
+                |> List.Extra.last
+                |> Maybe.andThen (validateMove currentDirection)
+                |> Maybe.withDefault currentDirection
+
+
+validateMove : Vector -> Vector -> Maybe Vector
+validateMove currentDirection lastMove =
+    let
+        isValid =
+            not (currentDirection.x + lastMove.x == 0) || not (currentDirection.y + lastMove.y == 0)
     in
-    { x = modBy game.cols (snakeHead.x + movesHead.x)
-    , y = modBy game.rows (snakeHead.y + movesHead.y)
-    }
+    if isValid then
+        Just lastMove
+
+    else
+        Nothing
 
 
 type alias Game =
     { cols : Int
     , rows : Int
-    , moves : Nonempty Vector
+    , moves : List Vector
+    , currentDirection : Vector
     , snake : Nonempty Vector
     , apple : Vector
     , startTime : Time.Posix
@@ -43,6 +57,25 @@ type alias Game =
     , isDebug : Bool
     , applesEaten : Int
     }
+
+
+moveToString : Vector -> String
+moveToString v =
+    -- elm has a compiler bug that prevents it from matching negative numbers so I go with a chain of if statements
+    if v == north then
+        "north"
+
+    else if v == south then
+        "south"
+
+    else if v == west then
+        "west"
+
+    else if v == east then
+        "east"
+
+    else
+        "unknown"
 
 
 type alias Vector =

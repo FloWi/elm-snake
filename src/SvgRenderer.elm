@@ -63,6 +63,15 @@ renderGame model =
                                             ++ "ms"
                                         )
                                     ]
+                                , Html.pre []
+                                    [ Html.text ("moves: [" ++ (List.map moveToString game.moves |> String.join ",") ++ "]")
+                                    ]
+                                , Html.pre []
+                                    [ Html.text ("currentDirection: " ++ moveToString game.currentDirection)
+                                    ]
+                                , Html.pre []
+                                    [ Html.text ("evaluatedDirection: " ++ moveToString (evaluateMove game.moves game.currentDirection))
+                                    ]
                                 ]
                             )
 
@@ -72,6 +81,16 @@ renderGame model =
                 apple =
                     drawListBlocks (Nonempty.fromElement game.apple) "apple" game
 
+                gameRect =
+                    Svg.rect
+                        [ Svg.Attributes.x "0"
+                        , Svg.Attributes.y "0"
+                        , Svg.Attributes.width "700"
+                        , Svg.Attributes.height "500"
+                        , Svg.Attributes.class "svgGameBackground"
+                        ]
+                        []
+
                 gameScreenDiv =
                     div [ Html.Attributes.class "gameScreen" ]
                         [ svg
@@ -79,7 +98,8 @@ renderGame model =
                             , preserveAspectRatio "xMinYMin meet"
                             , viewBox "0 0 700 500"
                             ]
-                            [ snake
+                            [ gameRect
+                            , snake
                             , apple
                             ]
                         ]
