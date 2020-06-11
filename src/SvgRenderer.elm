@@ -46,21 +46,31 @@ renderGame model =
 
                 apple =
                     drawListBlocks (Nonempty.fromElement game.apple) "apple" game
+
+                gameScreenDiv =
+                    div [ Html.Attributes.class "gameScreen" ]
+                        [ svg
+                            [ class "svgGame"
+                            , preserveAspectRatio "xMinYMin meet"
+                            , viewBox "0 0 700 500"
+                            ]
+                            [ snake
+                            , apple
+                            ]
+                        ]
+
+                divs =
+                    gameScreenDiv
+                        :: (if game.isDebug then
+                                [ debugScreenDiv ]
+
+                            else
+                                []
+                           )
             in
             div
                 [ Html.Attributes.class contentClass ]
-                [ div [ Html.Attributes.class "gameScreen" ]
-                    [ svg
-                        [ class "svgGame"
-                        , preserveAspectRatio "xMinYMin meet"
-                        , viewBox "0 0 700 500"
-                        ]
-                        [ snake
-                        , apple
-                        ]
-                    ]
-                , debugScreenDiv
-                ]
+                divs
 
         NotStarted ->
             div []

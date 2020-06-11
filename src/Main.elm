@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, div, h1, input, label, text)
+import Html exposing (Html, div, fieldset, h1, input, label, text)
 import Html.Attributes exposing (checked, style, type_)
 import Html.Events exposing (onClick)
 import List.Nonempty as Nonempty exposing (Nonempty(..))
@@ -28,7 +28,7 @@ initializeGame time zone =
     , apple = { x = 16, y = 2 }
     , currentTime = time
     , currentZone = zone
-    , isDebug = True
+    , isDebug = False
     }
 
 
@@ -43,6 +43,9 @@ update msg model =
             case msg of
                 Tick posix ->
                     ( RunningGame { game | currentTime = posix }, Cmd.none )
+
+                ToggleDebug ->
+                    ( RunningGame { game | isDebug = not game.isDebug }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -71,6 +74,15 @@ checkbox msg name isChecked =
 
 view : Model -> Html Msg
 view model =
+    let
+        isDebug =
+            case model of
+                RunningGame game ->
+                    game.isDebug
+
+                NotStarted ->
+                    False
+    in
     div
         [ Html.Attributes.class "gameView"
         ]
@@ -81,6 +93,8 @@ view model =
             model
         , div [ Html.Attributes.class "sidebar" ]
             [ h1 [] [ text "Sidebar" ]
+            , fieldset []
+                [ checkbox ToggleDebug "debugView" isDebug ]
             ]
         , div [ Html.Attributes.class "footer" ]
             [ h1 [] [ text "Footer" ]
