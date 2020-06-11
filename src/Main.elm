@@ -1,10 +1,12 @@
 module Main exposing (..)
 
 import Browser
+import Browser.Events
 import Helper exposing (flattenOpt)
 import Html exposing (Html, div, fieldset, h1, input, label, text)
 import Html.Attributes exposing (checked, style, type_)
 import Html.Events exposing (onClick)
+import Json.Decode as Decode
 import List.Nonempty as Nonempty exposing (Nonempty(..))
 import Messages exposing (..)
 import Model exposing (..)
@@ -87,7 +89,13 @@ update msg model =
                 ToggleDebug ->
                     ( RunningGame { game | isDebug = not game.isDebug }, Cmd.none )
 
-                _ ->
+                DirectionChange newDirection ->
+                    ( RunningGame { game | moves = Nonempty.cons newDirection game.moves }, Cmd.none )
+
+                NoOp ->
+                    ( RunningGame game, Cmd.none )
+
+                GotTimeInfos _ ->
                     ( model, Cmd.none )
 
         NotStarted ->
@@ -161,12 +169,40 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
         RunningGame game ->
-            Time.every
-                (toFloat (tickInterval game))
-                Tick
+            Sub.batch
+                [ Browser.Events.onKeyDown keyDecoder
+                , Time.every
+                    (toFloat (tickInterval game))
+                    Tick
+                ]
 
         NotStarted ->
             Sub.none
+
+
+keyDecoder : Decode.Decoder Msg
+keyDecoder =
+    Decode.field "key" Decode.string
+        |> Decode.map toDirection
+
+
+toDirection : String -> Msg
+toDirection string =
+    case string of
+        "ArrowLeft" ->
+            DirectionChange west
+
+        "ArrowRight" ->
+            DirectionChange east
+
+        "ArrowUp" ->
+            DirectionChange north
+
+        "ArrowDown" ->
+            DirectionChange south
+
+        _ ->
+            NoOp
 
 
 
