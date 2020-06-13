@@ -10,3 +10,5 @@ type Msg
     | ToggleDebug
     | DirectionChange Vector
     | NoOp
+    | NewApple Vector
+    | GameVictory

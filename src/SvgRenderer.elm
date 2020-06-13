@@ -119,6 +119,11 @@ renderGame model =
                 [ Html.h1 [] [ Html.text "Game hasn't been started yet" ]
                 ]
 
+        Victory game ->
+            div []
+                [ Html.h1 [] [ Html.text "You won" ]
+                ]
+
 
 drawListBlocks : Nonempty Vector -> String -> Game -> Svg msg
 drawListBlocks coords cssClass game =

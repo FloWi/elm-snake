@@ -7,9 +7,12 @@ import Html exposing (Html, div, fieldset, h1, input, label, text)
 import Html.Attributes exposing (checked, style, type_)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
+import List.Extra
 import List.Nonempty as Nonempty exposing (Nonempty(..))
 import Messages exposing (..)
 import Model exposing (..)
+import Random
+import Set
 import SvgRenderer exposing (..)
 import Task
 import Time exposing (Posix, Zone)
@@ -35,6 +38,7 @@ initializeGame time zone =
     , isDebug = True
     , currentTime = time
     , applesEaten = 0
+    , hasEatenInLastMove = False
     }
 
 
@@ -54,11 +58,8 @@ calcNewSnake game direction =
         newHead =
             addVector (Nonempty.head game.snake) direction
 
-        willEat =
-            newHead == game.apple
-
         newSnake =
-            case willEat of
+            case game.hasEatenInLastMove of
                 True ->
                     Nonempty.append (Nonempty.fromElement newHead) game.snake
 
@@ -74,7 +75,7 @@ calcNewSnake game direction =
         |> Nonempty.map (\pos -> adjustPositionToGameSize game pos)
 
 
-evaluateGameTick : Game -> Time.Posix -> Game
+evaluateGameTick : Game -> Time.Posix -> ( Model, Cmd Msg )
 evaluateGameTick game posix =
     let
         move =
@@ -82,8 +83,65 @@ evaluateGameTick game posix =
 
         snake =
             calcNewSnake game move
+
+        hasEaten =
+            Nonempty.head snake == game.apple
+
+        applesEaten =
+            if hasEaten then
+                game.applesEaten + 1
+
+            else
+                game.applesEaten
+
+        newGame =
+            { game | currentTime = posix, snake = snake, hasEatenInLastMove = hasEaten, applesEaten = applesEaten, moves = [], currentDirection = move }
+
+        appleCmd =
+            case hasEaten of
+                True ->
+                    calcNewAppleCmd newGame
+
+                False ->
+                    Cmd.none
     in
-    { game | currentTime = posix, snake = snake, moves = [], currentDirection = move }
+    ( RunningGame newGame, appleCmd )
+
+
+calcNewAppleCmd : Game -> Cmd Msg
+calcNewAppleCmd game =
+    let
+        gamefield =
+            List.range 0 (game.cols - 1)
+                |> List.concatMap
+                    (\x ->
+                        List.range 0 (game.rows - 1)
+                            |> List.map (\y -> ( x, y ))
+                    )
+                |> Set.fromList
+
+        snakeSet =
+            game.snake
+                |> Nonempty.toList
+                |> List.map (\vec -> ( vec.x, vec.y ))
+                |> Set.fromList
+
+        tilesWithoutSnake =
+            Set.diff gamefield snakeSet
+                |> Set.toList
+                |> List.map (\tup -> { x = Tuple.first tup, y = Tuple.second tup })
+    in
+    Random.int 0 (List.length tilesWithoutSnake - 1)
+        |> Random.map (\idx -> List.Extra.getAt idx tilesWithoutSnake)
+        |> Random.generate
+            (\maybeVec ->
+                case maybeVec of
+                    Just vec ->
+                        NewApple vec
+
+                    Nothing ->
+                        GameVictory
+            )
 
 
 
@@ -96,7 +154,7 @@ update msg model =
         RunningGame game ->
             case msg of
                 Tick posix ->
-                    ( RunningGame (evaluateGameTick game posix), Cmd.none )
+                    evaluateGameTick game posix
 
                 ToggleDebug ->
                     ( RunningGame { game | isDebug = not game.isDebug }, Cmd.none )
@@ -110,6 +168,12 @@ update msg model =
                 GotTimeInfos _ ->
                     ( model, Cmd.none )
 
+                NewApple appleLocation ->
+                    ( RunningGame { game | apple = appleLocation }, Cmd.none )
+
+                GameVictory ->
+                    ( Victory game, Cmd.none )
+
         NotStarted ->
             case msg of
                 GotTimeInfos ( currentTime, currentZone ) ->
@@ -117,6 +181,9 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        Victory game ->
+            ( model, Cmd.none )
 
 
 
@@ -142,6 +209,9 @@ view model =
 
                 NotStarted ->
                     ( Nothing, False )
+
+                Victory game ->
+                    ( Just game.applesEaten, game.isDebug )
 
         levelDiv =
             level
@@ -189,6 +259,9 @@ subscriptions model =
                 ]
 
         NotStarted ->
+            Sub.none
+
+        Victory _ ->
             Sub.none
 
 

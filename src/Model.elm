@@ -10,11 +10,12 @@ import Time
 type Model
     = RunningGame Game
     | NotStarted
+    | Victory Game
 
 
 tickInterval : Game -> Int
 tickInterval game =
-    1000 - min (game.applesEaten * 5) 100
+    1000 - game.applesEaten * 50
 
 
 evaluateMove : List Vector -> Vector -> Vector
@@ -55,6 +56,7 @@ type alias Game =
     , currentZone : Time.Zone
     , isDebug : Bool
     , applesEaten : Int
+    , hasEatenInLastMove : Bool
     }
 
 
